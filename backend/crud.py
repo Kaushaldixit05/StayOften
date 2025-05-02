@@ -38,22 +38,51 @@ def get_recommended_itineraries(db: Session, duration: int, limit: int = 3):
     ).limit(limit).all()
 
 def create_itinerary(db: Session, itinerary: schemas.ItineraryCreate):
-    # Create a new itinerary
-    db_itinerary = models.Itinerary(
-        title=itinerary.title,
-        destination=itinerary.destination,
-        duration=itinerary.duration,
-        price=itinerary.price,
-        description=itinerary.description,
-        highlights=itinerary.highlights,
-        image_url=itinerary.image_url,
-        is_recommended=itinerary.is_recommended
-    )
-    db.add(db_itinerary)
-    db.commit()
-    db.refresh(db_itinerary)
-    
-    # In a real application, we would also create the days, accommodations, activities, etc.
-    # For simplicity, we'll return the itinerary without days for now
-    
-    return db_itinerary
+    try:
+        # Create the main itinerary
+        db_itinerary = models.Itinerary(
+            title=itinerary.title,
+            destination=itinerary.destination,
+            duration=itinerary.duration,
+            price=itinerary.price,
+            description=itinerary.description,
+            highlights=itinerary.highlights,
+            image_url=itinerary.image_url,
+            is_recommended=itinerary.is_recommended
+        )
+        db.add(db_itinerary)
+        db.flush()  # Flush to get the itinerary ID
+
+        # Create days and their relationships if provided
+        if itinerary.days:
+            for day_data in itinerary.days:
+                # Create the day
+                db_day = models.ItineraryDay(
+                    itinerary_id=db_itinerary.id,
+                    day=day_data.day,
+                    accommodation_id=day_data.accommodation_id
+                )
+                db.add(db_day)
+                db.flush()  # Flush to get the day ID
+
+                # Add activities if provided
+                if day_data.activity_ids:
+                    activities = db.query(models.Activity).filter(
+                        models.Activity.id.in_(day_data.activity_ids)
+                    ).all()
+                    db_day.activities.extend(activities)
+
+                # Add transfers if provided
+                if day_data.transfer_ids:
+                    transfers = db.query(models.Transfer).filter(
+                        models.Transfer.id.in_(day_data.transfer_ids)
+                    ).all()
+                    db_day.transfers.extend(transfers)
+
+        db.commit()
+        db.refresh(db_itinerary)
+        return db_itinerary
+
+    except Exception as e:
+        db.rollback()
+        raise Exception(f"Failed to create itinerary: {str(e)}")

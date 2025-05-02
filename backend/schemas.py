@@ -50,6 +50,12 @@ class Activity(ActivityBase):
 # ItineraryDay schemas
 class ItineraryDayBase(BaseModel):
     day: int
+    accommodation_id: int
+    activity_ids: Optional[List[int]] = []
+    transfer_ids: Optional[List[int]] = []
+
+class ItineraryDayCreate(ItineraryDayBase):
+    pass
 
 class ItineraryDay(ItineraryDayBase):
     accommodation: Accommodation
@@ -71,7 +77,7 @@ class ItineraryBase(BaseModel):
     is_recommended: bool = False
 
 class ItineraryCreate(ItineraryBase):
-    pass
+    days: Optional[List[ItineraryDayCreate]] = None
 
 class Itinerary(ItineraryBase):
     id: int

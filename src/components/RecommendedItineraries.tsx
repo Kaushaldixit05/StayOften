@@ -19,8 +19,6 @@ const RecommendedItineraries: React.FC = () => {
         setError(null);
       } catch (err) {
         setError('Failed to load recommended itineraries');
-        // Use mock data for preview
-        setItineraries(getMockItineraries());
       } finally {
         setLoading(false);
       }
@@ -96,57 +94,5 @@ const RecommendedItineraries: React.FC = () => {
     </section>
   );
 };
-
-// Mock data for preview
-const getMockItineraries = (): Itinerary[] => [
-  {
-    id: 1,
-    title: "Phuket Paradise Explorer",
-    destination: "Phuket",
-    duration: 4,
-    price: 799,
-    description: "Explore the stunning beaches and vibrant culture of Phuket.",
-    highlights: [
-      "Relaxing day at Patong Beach",
-      "Phi Phi Islands boat tour",
-      "Authentic Thai cooking class"
-    ],
-    image_url: "https://images.pexels.com/photos/1268855/pexels-photo-1268855.jpeg",
-    is_recommended: true,
-    days: []
-  },
-  {
-    id: 2,
-    title: "Krabi Adventure",
-    destination: "Krabi",
-    duration: 4,
-    price: 899,
-    description: "Adventure through the limestone karsts and emerald waters of Krabi.",
-    highlights: [
-      "Railay Beach rock climbing",
-      "Four Islands tour",
-      "Hong Island kayaking experience"
-    ],
-    image_url: "https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg",
-    is_recommended: true,
-    days: []
-  },
-  {
-    id: 3,
-    title: "Phuket & Krabi Combo",
-    destination: "Phuket & Krabi",
-    duration: 4,
-    price: 1099,
-    description: "Experience the best of both Phuket and Krabi in one perfect itinerary.",
-    highlights: [
-      "Speedboat island hopping",
-      "Night market food tour",
-      "Beachfront sunset dinners"
-    ],
-    image_url: "https://images.pexels.com/photos/1287460/pexels-photo-1287460.jpeg",
-    is_recommended: true,
-    days: []
-  }
-];
 
 export default RecommendedItineraries;

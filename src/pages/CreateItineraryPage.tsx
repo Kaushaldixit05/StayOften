@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createItinerary } from '../utils/api';
-import { MapPin, Plus, Trash2, Clock, Briefcase, Car,Calendar } from 'lucide-react';
+import { MapPin, Plus, Trash2, Clock, Briefcase, Car, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const CreateItineraryPage: React.FC = () => {
@@ -17,7 +17,7 @@ const CreateItineraryPage: React.FC = () => {
     description: '',
     image_url: '',
     highlights: ['', '', ''],
-    days: []
+    is_recommended: false
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -67,64 +67,39 @@ const CreateItineraryPage: React.FC = () => {
       if (!formData.title || !formData.destination || !formData.description || filteredHighlights.length === 0) {
         throw new Error('Please fill in all required fields');
       }
+
+      if (isNaN(parseFloat(formData.price))) {
+        throw new Error('Please enter a valid price');
+      }
       
-      // Create mock days data based on duration
+      // Create mock days data that matches the backend schema
       const mockDays = Array.from({ length: formData.duration }, (_, i) => ({
         day: i + 1,
-        accommodation: {
-          id: 101,
-          name: "Resort in " + formData.destination,
-          location: formData.destination,
-          type: "Resort",
-          rating: 4,
-          description: "A beautiful resort in " + formData.destination,
-          amenities: ["Swimming Pool", "Restaurant", "Free WiFi"],
-          image_url: "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg"
-        },
-        transfers: [
-          {
-            id: 201 + i,
-            from_location: i === 0 ? "Airport" : "Previous location",
-            to_location: "Resort",
-            type: "Private Car",
-            duration: 1,
-            description: "Comfortable private transfer"
-          }
-        ],
-        activities: [
-          {
-            id: 301 + i,
-            name: "Activity for Day " + (i + 1),
-            location: formData.destination,
-            category: "Leisure",
-            duration: 4,
-            description: "Explore the area",
-            included: ["Guide", "Transport"],
-            image_url: "https://images.pexels.com/photos/1659438/pexels-photo-1659438.jpeg"
-          }
-        ]
+        accommodation_id: 1, // Using a fixed accommodation ID for demo
+        activity_ids: [1],   // Using a fixed activity ID for demo
+        transfer_ids: [1]    // Using a fixed transfer ID for demo
       }));
       
       // Prepare data for submission
       const submitData = {
-        ...formData,
-        price: parseFloat(formData.price) || 0,
+        title: formData.title,
+        destination: formData.destination,
+        duration: formData.duration,
+        price: parseFloat(formData.price),
+        description: formData.description,
         highlights: filteredHighlights,
-        days: mockDays,
-        is_recommended: false
+        image_url: formData.image_url,
+        is_recommended: formData.is_recommended,
+        days: mockDays
       };
       
-      // In a real app, we would submit to API
-      // await createItinerary(submitData);
-      console.log('Submitted data:', submitData);
+      console.log('Submitting:', JSON.stringify(submitData, null, 2));
+      
+      // Call API
+      await createItinerary(submitData);
       
       // Show success message
       setSuccess(true);
-      
-      // In a real app, we would redirect to the new itinerary
-      // setTimeout(() => {
-      //   navigate('/itineraries');
-      // }, 2000);
       
     } catch (err) {
       if (err instanceof Error) {
@@ -162,7 +137,7 @@ const CreateItineraryPage: React.FC = () => {
                       description: '',
                       image_url: '',
                       highlights: ['', '', ''],
-                      days: []
+                      is_recommended: false
                     });
                   }}
                   className="btn-outline"
@@ -254,6 +229,7 @@ const CreateItineraryPage: React.FC = () => {
                           className="input w-full pl-10"
                           placeholder="E.g., 799"
                           min="0"
+                          step="0.01"
                           required
                         />
                       </div>
@@ -338,6 +314,24 @@ const CreateItineraryPage: React.FC = () => {
                   </p>
                 </div>
                 
+                {/* Recommended checkbox */}
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="is_recommended"
+                    name="is_recommended"
+                    checked={formData.is_recommended}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      is_recommended: e.target.checked
+                    })}
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="is_recommended" className="ml-2 block text-sm text-gray-700">
+                    Mark as recommended itinerary
+                  </label>
+                </div>
+                
                 {/* Placeholder for day-by-day planning */}
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center mb-4">
@@ -346,38 +340,35 @@ const CreateItineraryPage: React.FC = () => {
                   </div>
                   
                   <p className="text-gray-600 mb-4">
-                    In a complete application, this section would allow you to plan each day of your itinerary in detail, including:
+                    For this demo, we're automatically generating sample day plans using accommodation ID 1, activity ID 1, and transfer ID 1.
+                    In a complete application, you would be able to select specific accommodations, activities, and transfers for each day.
                   </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="flex items-start p-3 bg-white rounded-md shadow-sm">
                       <Briefcase size={18} className="text-primary-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-medium">Accommodations</h4>
-                        <p className="text-sm text-gray-500">Hotels, resorts, etc.</p>
+                        <h4 className="font-medium">Accommodation ID</h4>
+                        <p className="text-sm text-gray-500">Using ID: 1</p>
                       </div>
                     </div>
                     
                     <div className="flex items-start p-3 bg-white rounded-md shadow-sm">
                       <Car size={18} className="text-primary-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-medium">Transfers</h4>
-                        <p className="text-sm text-gray-500">Transportation between locations</p>
+                        <h4 className="font-medium">Transfer IDs</h4>
+                        <p className="text-sm text-gray-500">Using ID: 1</p>
                       </div>
                     </div>
                     
                     <div className="flex items-start p-3 bg-white rounded-md shadow-sm">
                       <MapPin size={18} className="text-primary-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-medium">Activities</h4>
-                        <p className="text-sm text-gray-500">Tours, experiences, etc.</p>
+                        <h4 className="font-medium">Activity IDs</h4>
+                        <p className="text-sm text-gray-500">Using ID: 1</p>
                       </div>
                     </div>
                   </div>
-                  
-                  <p className="text-sm text-gray-500 mt-4">
-                    For this demo, we'll automatically generate sample day plans based on your duration selection.
-                  </p>
                 </div>
                 
                 {/* Form Actions */}
